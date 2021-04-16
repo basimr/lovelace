@@ -1,35 +1,19 @@
-function exponentialGrowthAnalytic(x0, k, t) {
-    return x0 * Math.exp(k * t)
+function logisticGrowthAnalytic(P0, r, K, t) {
+    return K / (1 + ((K - P0) / P0) * Math.exp(-r*t))
 }
 
-function exponentialGrowthForwardEuler(x0, k, dt, N) {
-    var x = new Array(N)
+function logisticGrowthForwardEuler(P0, r, K, dt, N) {
+    var P = new Array(N)
 
-    x[0] = x0;
+    P[0] = P0;
     for (n = 0; n < N; n++) {
-        x[n+1] = x[n] + k * x[n] * dt
+        P[n+1] = P[n] + dt * r * P[n] * (1 - P[n] / K)
     }
 
-    return x
+    return P
 }
 
-function visualize_test_case(input, output, expected, nTestCase) {
-
-    var x0 = input[0];
-    var k = input[1];
-    var dt = input[2];
-    var N = input[3];
-
-    var xOutput = output[0];
-    var xExpected = expected[0];
-
-    document.getElementById(`input${nTestCase}`).innerHTML =
-        `<b>Input</b>: x0 = ${x0}, k = ${k}, dt = ${dt}, N = ${N} <br>`
-
-    document.getElementById(`output${nTestCase}`).innerHTML =
-        `<b>Output</b>: <br>` +
-        `<div id="output-plot-${nTestCase}"></div>`
-
+function plotLogisticGrowth(P0, r, K, dt, N) {
     var times = new Array(N)
     for (n = 0; n <= N; n++) {
         times[n] = n * dt
@@ -37,93 +21,64 @@ function visualize_test_case(input, output, expected, nTestCase) {
 
     var traceAnalytic = {
         x: times,
-        y: times.map(t => exponentialGrowthAnalytic(x0, k, t)),
-        mode: 'lines',
-        name: 'analytic'
-    }
-
-    var traceNumericalCorrect = {
-        x: times,
-        y: xExpected,
-        mode: 'lines',
-        name: `numerical (correct)`
-    }
-
-    var traceNumericalUser = {
-        x: times,
-        y: xOutput,
-        mode: 'lines',
-        name: `your output`
-    }
-
-    var layout = {
-        xaxis: { title: 'Time t' },
-        yaxis: { title: 'x(t)' },
-        paper_bgcolor: 'rgba(0, 0, 0, 0)',
-        plot_bgcolor: 'rgba(0, 0, 0, 0)'
-    }
-
-    Plotly.newPlot(`output-plot-${nTestCase}`, [traceAnalytic, traceNumericalCorrect, traceNumericalUser], layout)
-
-    return
-}
-
-function plotExponentialGrowth(x0, k, dt, N) {
-    var times = new Array(N)
-    for (n = 0; n <= N; n++) {
-        times[n] = n * dt
-    }
-
-    var traceAnalytic = {
-        x: times,
-        y: times.map(t => exponentialGrowthAnalytic(x0, k, t)),
+        y: times.map(t => logisticGrowthAnalytic(P0, r, K, t)),
         type: 'lines',
         name: 'analytic'
     }
 
     var traceNumerical = {
         x: times,
-        y: exponentialGrowthForwardEuler(x0, k, dt, n),
+        y: logisticGrowthForwardEuler(P0, r, K, dt, N),
         type: 'lines',
         name: 'numerical'
     }
 
     var layout = {
-        title: 'Exponential growth',
+        title: 'Logistic growth',
         xaxis: { title: 'Time t' },
-        yaxis: { title: 'x(t)' },
+        yaxis: { title: 'P(t)' },
         paper_bgcolor: 'rgba(0, 0, 0, 0)',
         plot_bgcolor: 'rgba(0, 0, 0, 0)'
     }
 
-    Plotly.newPlot("exponential-growth-app", [traceAnalytic, traceNumerical], layout)
+    Plotly.newPlot("logistic-growth-app", [traceAnalytic, traceNumerical], layout)
 
     return
 }
 
-plotExponentialGrowth(1, 2.5, 0.1, 10)
+plotLogisticGrowth(10, 2, 100, 0.1, 50)
 
-var sliderInitialValue = document.getElementById("slider-initial-value");
+var sliderInitialPopulation = document.getElementById("slider-initial-population");
 var sliderGrowthRate = document.getElementById("slider-growth-rate");
+var sliderCarryingCapacity = document.getElementById("slider-carrying-capacity");
 var sliderTimeStep = document.getElementById("slider-time-step");
 var sliderIterations = document.getElementById("slider-iterations");
 
-noUiSlider.create(sliderInitialValue, {
-    start: [1],
+noUiSlider.create(sliderInitialPopulation, {
+    start: [10],
     range: {
-        "min": [-10],
-        "max": [10]
+        "min": [0],
+        "max": [100]
     },
-    step: 0.01
+    step: 0.1
 });
 
 noUiSlider.create(sliderGrowthRate, {
-    start: [1],
+    start: [2],
     range: {
         "min": [-5],
         "max": [5]
     },
     step: 0.01
+});
+
+noUiSlider.create(sliderCarryingCapacity, {
+    start: [100],
+    range: {
+        "min": [0],
+        "max": [1000]
+    },
+    step: 1
 });
 
 noUiSlider.create(sliderTimeStep, {
@@ -136,7 +91,7 @@ noUiSlider.create(sliderTimeStep, {
 });
 
 noUiSlider.create(sliderIterations, {
-    start: [10],
+    start: [50],
     range: {
         "min": [1],
         "max": [100]
@@ -144,28 +99,32 @@ noUiSlider.create(sliderIterations, {
     step: 1
 });
 
-var labelInitialValue = document.getElementById("label-initial-value");
+var labelInitialPopulation = document.getElementById("label-initial-population");
 var labelGrowthRate = document.getElementById("label-growth-rate");
+var labelCarryingCapacity = document.getElementById("label-carrying-capacity");
 var labelTimeStep = document.getElementById("label-time-step");
 var labelIterations = document.getElementById("label-iterations");
 
-function replotExponentialGrowth() {
-    var x0 = parseFloat(sliderInitialValue.noUiSlider.get());
-    var k = parseFloat(sliderGrowthRate.noUiSlider.get());
+function replotLogisticGrowth() {
+    var P0 = parseFloat(sliderInitialPopulation.noUiSlider.get());
+    var r = parseFloat(sliderGrowthRate.noUiSlider.get());
+    var K = parseFloat(sliderCarryingCapacity.noUiSlider.get());
     var dt = parseFloat(sliderTimeStep.noUiSlider.get());
     var N = parseFloat(sliderIterations.noUiSlider.get());
 
-    labelInitialValue.innerHTML = x0;
-    labelGrowthRate.innerHTML = k;
+    labelInitialPopulation.innerHTML = P0;
+    labelGrowthRate.innerHTML = r;
+    labelCarryingCapacity.innerHTML = K;
     labelTimeStep.innerHTML = dt;
     labelIterations.innerHTML = N;
 
-    plotExponentialGrowth(x0, k, dt, N)
+    plotLogisticGrowth(P0, r, K, dt, N);
 
     return
 }
 
-sliderInitialValue.noUiSlider.on("update", replotExponentialGrowth);
-sliderGrowthRate.noUiSlider.on("update", replotExponentialGrowth);
-sliderTimeStep.noUiSlider.on("update", replotExponentialGrowth);
-sliderIterations.noUiSlider.on("update", replotExponentialGrowth);
+sliderInitialPopulation.noUiSlider.on("update", replotLogisticGrowth);
+sliderGrowthRate.noUiSlider.on("update", replotLogisticGrowth);
+sliderCarryingCapacity.noUiSlider.on("update", replotLogisticGrowth);
+sliderTimeStep.noUiSlider.on("update", replotLogisticGrowth);
+sliderIterations.noUiSlider.on("update", replotLogisticGrowth);

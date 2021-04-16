@@ -1,0 +1,49 @@
+{% extends "problems/problem.html" %}
+
+{% load static %}
+
+{% block you_will_learn %}
+  modeling population growth and numerically solving a differential equation.
+{% endblock %}
+
+{% block problem_body %}
+<p class="has-text-justified">
+  $$ \frac{dP}{dt} = rP \left( 1 - \frac{P}{K} \right) $$
+
+  $$ P^{n+1} = P^n + \Delta t rP^n \left( 1 - \frac{P^n}{K} \right) $$
+</p>
+<br>
+
+<figure class="has-text-centered">
+  <div id="logistic-growth-app"></id>
+</figure>
+<br>
+{% endblock %}
+
+{% block input_description %}
+P^0, \Delta t, r, K, N
+{% endblock %}
+
+{% block output_description %}
+P(t) = {P^0, P^1, ..., P^N}
+{% endblock %}
+
+{% block examples %}
+<article class="message">
+  <div class="message-header">
+    <p>Example</p>
+  </div>
+  <div class="message-body"
+       style="font-family: monospace; text-align: justify; word-wrap: break-word; white-space:pre;"><b>Input</b>: $1,000, 0.07, 25
+<b>Output</b>: $5,427.43</div>
+</article>
+{% endblock %}
+
+{% block function_signature %}
+logistic_growth(P0, dt, r, K, N)
+{% endblock %}
+
+{% block notes_and_references %}
+{% endblock %}
+
+{% block discourse_topic_id %}x{% endblock %}
