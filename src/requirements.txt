@@ -3,7 +3,7 @@ beautifulsoup4==4.9.3
 certifi==2020.12.5
 chardet==4.0.0
 confusable-homoglyphs==3.2.0
-Django==3.1.8
+Django==3.1.12
 django-countries==7.0
 django-registration==3.1.2
 django-widget-tweaks==1.4.8
